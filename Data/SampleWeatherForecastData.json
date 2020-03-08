@@ -1,0 +1,61 @@
+﻿{
+    "observations": {
+        "location": [
+            {
+                "observation": [
+                    {
+                        "daylight": "N",
+                        "description": "Passing clouds. Warm.",
+                        "skyInfo": "7",
+                        "skyDescription": "Passing clouds",
+                        "temperature": "27.00",
+                        "temperatureDesc": "Warm",
+                        "comfort": "30.61",
+                        "highTemperature": "34.80",
+                        "lowTemperature": "25.00",
+                        "humidity": "89",
+                        "dewPoint": "25.00",
+                        "precipitation1H": "*",
+                        "precipitation3H": "*",
+                        "precipitation6H": "*",
+                        "precipitation12H": "*",
+                        "precipitation24H": "*",
+                        "precipitationDesc": "",
+                        "airInfo": "*",
+                        "airDescription": "",
+                        "windSpeed": "12.97",
+                        "windDirection": "170",
+                        "windDesc": "South",
+                        "windDescShort": "S",
+                        "barometerPressure": "1009.15",
+                        "barometerTrend": "",
+                        "visibility": "*",
+                        "snowCover": "*",
+                        "icon": "14",
+                        "iconName": "night_mostly_clear",
+                        "iconLink": "https://weather.ls.hereapi.com/static/weather/icon/23.png",
+                        "ageMinutes": "45",
+                        "activeAlerts": "0",
+                        "country": "Vietnam",
+                        "state": "Hồ Chí Minh",
+                        "city": "Phường Hai",
+                        "latitude": 10.8057,
+                        "longitude": 106.6666,
+                        "distance": 1.09,
+                        "elevation": 0.00,
+                        "utcTime": "2020-03-08T22:30:00.000+07:00"
+                    }
+                ],
+                "country": "Vietnam",
+                "state": "Hồ Chí Minh",
+                "city": "Phường Hai",
+                "latitude": 10.80569,
+                "longitude": 106.66661,
+                "distance": 0.14,
+                "timezone": 7
+            }
+        ]
+    },
+    "feedCreation": "2020-03-08T16:15:23.705Z",
+    "metric": true
+}

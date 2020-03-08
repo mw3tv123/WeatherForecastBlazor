@@ -1,0 +1,91 @@
+﻿@page "/"
+
+@using WeatherForcast.Data
+@using System.Net.Http
+@using AspNetMonsters.Blazor.Geolocation
+@using Services
+
+@inject HttpClient Http
+@inject LocationService LocationService
+
+<div>
+    <div>
+        <h1 class="text-capitalize text-center align-content-center">Weather Forecast</h1>
+        <h2 class="text-center">@Weather.City.Name</h2>
+        <img class="img-fluid d-xl-flex mx-auto">
+    </div>
+    <div>
+        <p class="text-center">
+            <strong style="font-size: 60px;">@Temperature</strong>
+        </p>
+    </div>
+    <div>
+        <p class="text-center">@Weather.Summary<img></p>
+        <p class="text-center">Paragraph</p>
+    </div>
+</div>
+
+@code {
+    private WeatherForecast Weather { get; set; }
+
+    private TemperatureType Type { get; set; }
+
+    private string Temperature {
+        get {
+            if ( Weather.TemperatureC is 0 ) {
+                return "N/A";
+            }
+
+            switch ( Type ) {
+                case TemperatureType.Celsius:
+                    return Weather.TemperatureC + "*";
+                case TemperatureType.Fahrenhait:
+                    return Weather.TemperatureF + "*";
+                default:
+                    return "N/A";
+            }
+        }
+        set {
+            if ( int.TryParse(value, out int parseValue) ) {
+                Weather.TemperatureC = parseValue;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync() {
+        await base.OnInitializedAsync();
+
+        if ( Weather is null ) {
+            Weather = new WeatherForecast {
+                City = new City {
+                    Name = "Ho Chi Minh",
+                    Country = "Vietnam"
+                },
+            };
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync( bool firstRender ) {
+        Location location = await LocationService.GetLocationAsync();
+
+        Weather.City.Latitude = location.Latitude;
+        Weather.City.Longitude = location.Longitude;
+
+        GetWeatherCondition(Weather.City.Latitude, Weather.City.Longitude);
+    }
+
+    public async void GetWeatherCondition( decimal latitude, decimal longitude ) {
+        // Move Weather Forecast API Key to configuration file later.
+        string apiKey = "7VtCqOR8LeQZa0n8ocw6fYl6_fnq7pwR45cIVScDmXs";
+
+        string url = string.Format(@"https://weather.ls.hereapi.com/weather/1.0/report.json?product=observation&latitude={0}&longitude={1}&oneobservation=true&apiKey={2}", latitude.ToString(), longitude.ToString(), apiKey);
+        HttpResponseMessage response = await Http.GetAsync(url);
+
+        if ( response.StatusCode is System.Net.HttpStatusCode.OK ) {
+            // Read json data response.
+            string result = await response.Content.ReadAsStringAsync();
+
+            Dictionary<string, string> weatherForecastInfo = (Dictionary<string, string>)JSON.ToCollections(JSON.ToObject(result));
+        }
+    }
+}
