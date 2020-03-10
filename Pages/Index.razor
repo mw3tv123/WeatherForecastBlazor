@@ -21,7 +21,7 @@
     </div>
     <div>
         <p class="text-center">
-            <img src="">
+            <img src="@Weather.IconLink">
             @Weather.Summary
         </p>
         <p class="text-center">Updated time: @Weather.Date.ToString()</p>
@@ -55,28 +55,30 @@
         }
     }
 
+    // This flag use to prevent Weather API and Geolocation API from infinite call.
+    private bool IsInitiated = false;
+
     protected override async Task OnInitializedAsync() {
         await base.OnInitializedAsync();
 
         if ( Weather is null ) {
             Weather = new WeatherForecast {
-                City = new City {
-                    Name = "Ho Chi Minh",
-                    Country = "Vietnam"
-                },
+                City = new City()
             };
         }
     }
 
     protected override async Task OnAfterRenderAsync( bool firstRender ) {
-        // Issue: This Geolocation API can only invoke in OnAfterRenderAsync.
-        Location location = await LocationService.GetLocationAsync();
+        if ( !IsInitiated ) {
+            IsInitiated = true;
+            Location location = await LocationService.GetLocationAsync();
 
-        Weather.City.Latitude = location.Latitude;
-        Weather.City.Longitude = location.Longitude;
+            Weather.City.Latitude = location.Latitude;
+            Weather.City.Longitude = location.Longitude;
 
-        // Issue: This got call infinite every time state have change.
-        GetWeatherCondition(Weather.City.Latitude, Weather.City.Longitude);
+            // Issue: This got call infinite every time state have change.
+            GetWeatherCondition(Weather.City.Latitude, Weather.City.Longitude);
+        }
     }
 
     public async void GetWeatherCondition( decimal latitude, decimal longitude ) {
@@ -107,6 +109,7 @@
                 Weather.TemperatureC = Convert.ToDouble(observationData["temperature"]);
                 Weather.Date = (DateTime)observationData["utcTime"];
                 Weather.Summary += observationData["description"];
+                Weather.IconLink += observationData["iconLink"] + "?apiKey=" + apiKey;
 
                 // Refresh UI to update change.
                 await InvokeAsync(() => {
