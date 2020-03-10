@@ -20,8 +20,11 @@
         </p>
     </div>
     <div>
-        <p class="text-center">@Weather.Summary<img></p>
-        <p class="text-center">Paragraph</p>
+        <p class="text-center">
+            <img src="">
+            @Weather.Summary
+        </p>
+        <p class="text-center">Updated time: @Weather.Date.ToString()</p>
     </div>
 </div>
 
@@ -46,7 +49,7 @@
             }
         }
         set {
-            if ( int.TryParse(value, out int parseValue) ) {
+            if ( float.TryParse(value, out float parseValue) ) {
                 Weather.TemperatureC = parseValue;
             }
         }
@@ -66,11 +69,13 @@
     }
 
     protected override async Task OnAfterRenderAsync( bool firstRender ) {
+        // Issue: This Geolocation API can only invoke in OnAfterRenderAsync.
         Location location = await LocationService.GetLocationAsync();
 
         Weather.City.Latitude = location.Latitude;
         Weather.City.Longitude = location.Longitude;
 
+        // Issue: This got call infinite every time state have change.
         GetWeatherCondition(Weather.City.Latitude, Weather.City.Longitude);
     }
 
@@ -85,7 +90,29 @@
             // Read json data response.
             string result = await response.Content.ReadAsStringAsync();
 
-            Dictionary<string, string> weatherForecastInfo = (Dictionary<string, string>)JSON.ToCollections(JSON.ToObject(result));
+            Dictionary<string, object> weatherForecastInfo = JSON.Deserialize(result) as Dictionary<string, object>;
+            if ( weatherForecastInfo != null ) {
+                // Issue: We much cast it before use deeper json data.
+                var observationsInfor = weatherForecastInfo["observations"] as Dictionary<string, object>;
+                var locationsInfo = observationsInfor["location"] as List<object>;
+                var currentLocationInfo = locationsInfo[0] as Dictionary<string, object>;
+
+                // Get user's webbrowser current location name.
+                Weather.City.Name = currentLocationInfo["state"].ToString();
+                Weather.City.Country = currentLocationInfo["country"].ToString();
+
+                // Get user's webbrowser current location weather forecast.
+                var currentLocationObservationsList = currentLocationInfo["observation"] as List<object>;
+                var observationData = currentLocationObservationsList[0] as Dictionary<string, object>;
+                Weather.TemperatureC = Convert.ToDouble(observationData["temperature"]);
+                Weather.Date = (DateTime)observationData["utcTime"];
+                Weather.Summary += observationData["description"];
+
+                // Refresh UI to update change.
+                await InvokeAsync(() => {
+                    base.StateHasChanged();
+                });
+            }
         }
     }
 }
